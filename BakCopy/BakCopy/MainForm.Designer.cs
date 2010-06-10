@@ -30,7 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.fsw = new System.IO.FileSystemWatcher();
             this.mainMenu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newTaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,6 +46,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.logBox = new System.Windows.Forms.TextBox();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.wordwrapBtn = new System.Windows.Forms.ToolStripButton();
             this.cleanBtn = new System.Windows.Forms.ToolStripButton();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -57,8 +57,6 @@
             this.stopTaskMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.wordwrapBtn = new System.Windows.Forms.ToolStripButton();
-            ((System.ComponentModel.ISupportInitialize)(this.fsw)).BeginInit();
             this.mainMenu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -66,15 +64,6 @@
             this.toolStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // fsw
-            // 
-            this.fsw.EnableRaisingEvents = true;
-            this.fsw.SynchronizingObject = this;
-            this.fsw.Changed += new System.IO.FileSystemEventHandler(this.fsw_Changed);
-            this.fsw.Created += new System.IO.FileSystemEventHandler(this.fsw_Created);
-            this.fsw.Deleted += new System.IO.FileSystemEventHandler(this.fsw_Deleted);
-            this.fsw.Renamed += new System.IO.RenamedEventHandler(this.fsw_Renamed);
             // 
             // mainMenu
             // 
@@ -222,6 +211,17 @@
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             // 
+            // wordwrapBtn
+            // 
+            this.wordwrapBtn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.wordwrapBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.wordwrapBtn.Image = ((System.Drawing.Image)(resources.GetObject("wordwrapBtn.Image")));
+            this.wordwrapBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.wordwrapBtn.Name = "wordwrapBtn";
+            this.wordwrapBtn.Size = new System.Drawing.Size(23, 22);
+            this.wordwrapBtn.Text = "Word Wrap";
+            this.wordwrapBtn.Click += new System.EventHandler(this.wordwrapBtn_Click);
+            // 
             // cleanBtn
             // 
             this.cleanBtn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
@@ -301,17 +301,6 @@
             this.imageList1.Images.SetKeyName(0, "media_playback_stop.png");
             this.imageList1.Images.SetKeyName(1, "media_playback_start.png");
             // 
-            // wordwrapBtn
-            // 
-            this.wordwrapBtn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.wordwrapBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.wordwrapBtn.Image = ((System.Drawing.Image)(resources.GetObject("wordwrapBtn.Image")));
-            this.wordwrapBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.wordwrapBtn.Name = "wordwrapBtn";
-            this.wordwrapBtn.Size = new System.Drawing.Size(23, 22);
-            this.wordwrapBtn.Text = "Word Wrap";
-            this.wordwrapBtn.Click += new System.EventHandler(this.wordwrapBtn_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -325,7 +314,6 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "BakCopy";
-            ((System.ComponentModel.ISupportInitialize)(this.fsw)).EndInit();
             this.mainMenu.ResumeLayout(false);
             this.mainMenu.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
@@ -343,7 +331,6 @@
 
         #endregion
 
-        private System.IO.FileSystemWatcher fsw;
         private System.Windows.Forms.MenuStrip mainMenu;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newTaskToolStripMenuItem;

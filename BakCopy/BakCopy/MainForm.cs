@@ -6,12 +6,15 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Collections.Specialized;
+using System.Threading;
+using System.Collections;
 
 namespace BakCopy
 {
     public partial class MainForm : Form
     {
         private static IniFiles ini = new IniFiles(Application.StartupPath + @"\config.ini");
+        private Hashtable threadNameTable = new Hashtable();//全局线程Name列表
 
         public MainForm()
         {
@@ -19,37 +22,20 @@ namespace BakCopy
             load_listview();
         }
 
-        private void fsw_Changed(object sender, System.IO.FileSystemEventArgs e)
-        {
-
-        }
-
-        private void fsw_Created(object sender, System.IO.FileSystemEventArgs e)
-        {
-
-        }
-
-        private void fsw_Deleted(object sender, System.IO.FileSystemEventArgs e)
-        {
-
-        }
-
-        private void fsw_Renamed(object sender, System.IO.RenamedEventArgs e)
-        {
-
-        }
-
         private void newTaskToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string new_taskname = "";
 
             FormNew fn = new FormNew();
-            fn.ShowDialog();
+            DialogResult dr = fn.ShowDialog();
             new_taskname = fn.new_taskname;
             fn.Dispose();
 
             //log
-            writeLog("New task:" + new_taskname);
+            if (dr != DialogResult.Cancel)//(new_taskname != null && new_taskname.Length > 0)
+            {
+                writeLog("New task:" + new_taskname);
+            }            
 
             load_listview();
         }
@@ -111,11 +97,15 @@ namespace BakCopy
                 FormNew fn = new FormNew();
                 fn.isModify = true;
                 fn.modify_taskname = taskname;
-                fn.ShowDialog();
+                DialogResult dr = fn.ShowDialog();
+                //MessageBox.Show(dr.ToString());
                 fn.Dispose();
 
                 //log
-                writeLog("Modify task : " + taskname);
+                if (dr != DialogResult.Cancel)
+                {
+                    writeLog("Modify task : " + taskname);
+                }                
 
                 load_listview();
             }
@@ -176,7 +166,11 @@ namespace BakCopy
 
             StringCollection sectionList = new StringCollection();
             ini.ReadSections(sectionList);
+            
             int autostart = 0;
+            string srcDir, dstDir, filetype;
+            bool subdir = false;
+
             for (int i = 0; i < sectionList.Count; i++)
             {
                 if (sectionList[i] != null)
@@ -184,10 +178,24 @@ namespace BakCopy
                     autostart = ini.ReadInteger(sectionList[i], "autostart", 0);
                     if (autostart < 1)
                     {
-                        //start task here
+                        //read setting
+                        srcDir = ini.ReadString(sectionList[i], "srcDir", "");
+                        dstDir = ini.ReadString(sectionList[i], "dstDir", "");
+                        filetype = ini.ReadString(sectionList[i], "filetype", "");
+                        subdir = ini.ReadInteger(sectionList[i], "subdir", 0) > 0;
+
+                        // start thread
+                        Thread myThread = new Thread(new ThreadStart(new FileCopyThread(srcDir,dstDir,filetype,subdir).run));
+                        myThread.Name = sectionList[i];
+                        myThread.Start();
+                        this.threadNameTable.Add(sectionList[i], myThread.ThreadState);
+
+                        //change status
                         ini.WriteInteger(sectionList[i], "autostart", 1);
+
+                        //log
                         logText.Append(sectionList[i]).Append(",");
-                        MessageBox.Show("Start task " + sectionList[i]);
+                        //MessageBox.Show("Start task " + sectionList[i]);
                     }
                 }
             }
@@ -258,10 +266,23 @@ namespace BakCopy
                     return;
                 }
 
-                //start it here
+                //read setting
+                string srcDir = ini.ReadString(taskname, "srcDir", "");
+                string dstDir = ini.ReadString(taskname, "dstDir", "");
+                string filetype = ini.ReadString(taskname, "filetype", "");
+                bool subdir = ini.ReadInteger(taskname, "subdir", 0) > 0;
+
+                // start thread
+                Thread myThread = new Thread(new ThreadStart(new FileCopyThread(srcDir, dstDir, filetype, subdir).run));
+                myThread.Name = taskname;
+                myThread.Start();
+                this.threadNameTable.Add(taskname, myThread.ThreadState);
+
+                //change status
                 ini.WriteInteger(taskname, "autostart", 1);
+
                 load_listview();
-                MessageBox.Show("Start it here...");
+                //MessageBox.Show("Start it here...");
 
                 //log
                 writeLog("Start task : " + taskname);
@@ -301,6 +322,11 @@ namespace BakCopy
                 ini.WriteInteger(taskname, "autostart", 0);
                 load_listview();
                 MessageBox.Show("Stop it here...");
+
+                foreach (object thread in this.threadNameTable)
+                {
+                    string n = thread.ToString();
+                }
 
                 //log
                 writeLog("Stop task : " + taskname);

@@ -84,15 +84,8 @@ namespace BakCopy
             ini.WriteInteger(section, "autostart", 0);
 
             this.new_taskname = section;//for MainForm callback
+            this.DialogResult = DialogResult.OK;//for MainForm callback
             this.Close();
-        }
-
-        private void modify_task(string taskname)
-        {
-            if (this.isModify && this.modify_taskname != "")
-            {
-
-            }
         }
 
         private void srcDirBtn_Click(object sender, EventArgs e)
@@ -152,27 +145,7 @@ namespace BakCopy
             }
         }
 
-        private void FormNew_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            MessageBox.Show(e.KeyCode + "\n" + e.KeyData + "\n" + e.KeyValue );
-        }
-
-        private void FormNew_KeyDown(object sender, KeyEventArgs e)
-        {
-            MessageBox.Show(e.KeyCode + "\n" + e.KeyData + "\n" + e.KeyValue);
-        }
-
-        private void FormNew_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            MessageBox.Show(e.KeyChar.ToString());
-        }
-
-        private void FormNew_KeyUp(object sender, KeyEventArgs e)
-        {
-            MessageBox.Show(e.KeyCode + "\n" + e.KeyData + "\n" + e.KeyValue);
-        }
-
-        /// <summary>
+         /// <summary>
         /// esc退出窗体
         /// </summary>
         /// <param name="msg"></param>
