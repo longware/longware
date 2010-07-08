@@ -18,7 +18,7 @@ namespace BakCopy
         private static extern bool WritePrivateProfileString(string section, string key, string val, string filePath);
         [DllImport("kernel32")]
         private static extern int GetPrivateProfileString(string section, string key, string def, byte[] retVal, int size, string filePath);
-        
+
         //类的构造函数，传递INI文件名
         public IniFiles(string AFileName)
         {
@@ -35,7 +35,6 @@ namespace BakCopy
                     sw.Write("# Task Config File");
                     sw.Close();
                 }
-
                 catch
                 {
                     throw (new ApplicationException("Ini文件不存在"));
@@ -56,12 +55,13 @@ namespace BakCopy
         //读取INI文件指定
         public string ReadString(string Section, string Ident, string Default)
         {
+            char[] charsToTrim = { '\0' };//中文末尾\0拖字符
             Byte[] Buffer = new Byte[65535];
             int bufLen = GetPrivateProfileString(Section, Ident, Default, Buffer, Buffer.GetUpperBound(0), FileName);
             //必须设定0（系统默认的代码页）的编码方式，否则无法支持中文
-            string s = Encoding.GetEncoding(0).GetString(Buffer);
+            string s = Encoding.GetEncoding(0).GetString(Buffer);//54936=GB18030
             s = s.Substring(0, bufLen);
-            return s.Trim();
+            return s.Trim(charsToTrim).Trim();
         }
 
         //读整数
@@ -141,8 +141,7 @@ namespace BakCopy
             //Note:必须得用Bytes来实现，StringBuilder只能取到第一个Section
             byte[] Buffer = new byte[65535];
             int bufLen = 0;
-            bufLen = GetPrivateProfileString(null, null, null, Buffer,
-             Buffer.GetUpperBound(0), FileName);
+            bufLen = GetPrivateProfileString(null, null, null, Buffer, Buffer.GetUpperBound(0), FileName);
             GetStringsFromBuffer(Buffer, bufLen, SectionList);
         }
         //读取指定的Section的所有Value到列表中
