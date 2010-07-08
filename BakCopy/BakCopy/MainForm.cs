@@ -19,6 +19,8 @@ namespace BakCopy
         public MainForm()
         {
             InitializeComponent();
+
+            start_default_task();
             load_listview();
         }
 
@@ -186,9 +188,10 @@ namespace BakCopy
 
                         // start thread
                         Thread myThread = new Thread(new ThreadStart(new FileCopyThread(srcDir,dstDir,filetype,subdir).run));
+                        myThread.IsBackground = true;
                         myThread.Name = sectionList[i];
                         myThread.Start();
-                        this.threadNameTable.Add(sectionList[i], myThread.ThreadState);
+                        this.threadNameTable.Add(sectionList[i], myThread);
 
                         //change status
                         ini.WriteInteger(sectionList[i], "autostart", 1);
@@ -225,7 +228,15 @@ namespace BakCopy
                         //stop task here
                         ini.WriteInteger(sectionList[i], "autostart", 0);
                         logText.Append(sectionList[i]).Append(",");
-                        MessageBox.Show("Stop task " + sectionList[i]);
+
+                        //stop it
+                        if (this.threadNameTable.ContainsKey(sectionList[i]))
+                        {
+                            Thread th = (Thread)this.threadNameTable[sectionList[i]];
+                            th.Join();
+                            th.Abort();
+                            this.threadNameTable.Remove(sectionList[i]);
+                        }
                     }
                 }
             }
@@ -274,9 +285,10 @@ namespace BakCopy
 
                 // start thread
                 Thread myThread = new Thread(new ThreadStart(new FileCopyThread(srcDir, dstDir, filetype, subdir).run));
+                myThread.IsBackground = true;
                 myThread.Name = taskname;
                 myThread.Start();
-                this.threadNameTable.Add(taskname, myThread.ThreadState);
+                this.threadNameTable.Add(taskname, myThread);
 
                 //change status
                 ini.WriteInteger(taskname, "autostart", 1);
@@ -321,11 +333,19 @@ namespace BakCopy
                 //stop it here
                 ini.WriteInteger(taskname, "autostart", 0);
                 load_listview();
-                MessageBox.Show("Stop it here...");
 
-                foreach (object thread in this.threadNameTable)
+                //stop it
+                foreach (DictionaryEntry de in this.threadNameTable)
                 {
-                    string n = thread.ToString();
+                    if (de.Key.ToString() == taskname)
+                    {
+                        //Thread th = (Thread)this.threadNameTable[taskname];
+                        Thread th = (Thread)de.Value;
+                        th.Join();
+                        th.Abort();
+                        this.threadNameTable.Remove(taskname);
+                        break;
+                    }
                 }
 
                 //log
@@ -352,6 +372,49 @@ namespace BakCopy
                 }
             }
             sectionList.Clear();
+        }
+
+        /// <summary>
+        /// 启动默认状态是start的任务
+        /// </summary>
+        public void start_default_task()
+        {
+            StringBuilder logText = new StringBuilder();
+            logText.Append("Batch start default task:");
+
+            StringCollection sectionList = new StringCollection();
+            ini.ReadSections(sectionList);
+            int autostart = 0;
+            for (int i = 0; i < sectionList.Count; i++)
+            {
+                if (sectionList[i] != null)
+                {
+                    autostart = ini.ReadInteger(sectionList[i], "autostart", 0);
+                    if (autostart > 0)
+                    {
+                        //read setting
+                        string srcDir = ini.ReadString(sectionList[i], "srcDir", "");
+                        string dstDir = ini.ReadString(sectionList[i], "dstDir", "");
+                        string filetype = ini.ReadString(sectionList[i], "filetype", "");
+                        bool subdir = ini.ReadInteger(sectionList[i], "subdir", 0) > 0;
+
+                        // start thread
+                        Thread myThread = new Thread(new ThreadStart(new FileCopyThread(srcDir, dstDir, filetype, subdir).run));
+                        myThread.IsBackground = true;
+                        myThread.Name = sectionList[i];
+                        myThread.Start();
+                        this.threadNameTable.Add(sectionList[i], myThread);
+
+                        //log
+                        logText.Append(sectionList[i]).Append(",");
+                    }
+                }
+            }
+
+            sectionList.Clear();
+
+            //log
+            writeLog(logText.ToString());
         }
 
         private void wordwrapBtn_Click(object sender, EventArgs e)
